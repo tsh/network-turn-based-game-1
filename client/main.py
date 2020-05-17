@@ -6,6 +6,7 @@ import requests
 
 from map import Map
 
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 WIDTH = 500
@@ -14,6 +15,26 @@ HALF_WIDTH = int(WIDTH / 2)
 HALF_HEIGHT = int(HEIGHT / 2)
 TILE_WIDTH = 25
 TILE_HEIGHT = 25
+
+
+class GameServer:
+    def __init__(self, address='127.0.0.1', port=8001):
+        self.url = f'http://{address}:{port}'
+        # create game
+        rsp = requests.post(self.url)
+        rsp.raise_for_status()
+        self.id = rsp.json()['id']
+
+    def game_map(self):
+        rsp = requests.get('{url}/{path}'.format(url=self.url, path=self.id))
+        return rsp.json()['map']
+
+    def check_server(self):
+        path = '{id}/check'.format(id=self.id)
+        rsp = requests.get('{url}/{path}'.format(url=self.url, path=path))
+        rsp.raise_for_status()
+        print(rsp.json())
+
 
 
 class Game(object):
@@ -29,13 +50,11 @@ class Game(object):
         self.textRect.centerx = self.windowSurface.get_rect().centerx
         self.textRect.centery = self.windowSurface.get_rect().centery
 
-        rsp = requests.post('http://127.0.0.1:8001')
-        rsp.raise_for_status()
-        id_ = rsp.json()['id']
-        rsp = requests.get('http://127.0.0.1:8001/'+str(id_))
-        mp = rsp.json()['map']
+        self.game_server = GameServer()
         self.map = Map()
-        self.map.initialize(mp)
+        self.map.initialize(self.game_server.game_map())
+
+        pygame.time.set_timer(pygame.USEREVENT, 1000)
 
 
     def game_loop(self):
@@ -52,6 +71,8 @@ class Game(object):
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
                     print(pos)
+                if event.type == pygame.USEREVENT:
+                    self.game_server.check_server()
 
 game = Game()
 game.game_loop()

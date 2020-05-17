@@ -13,6 +13,9 @@ class Game:
                 'players': [{'name': 'User1', 'is_active': True},
                             {'name': 'User2'}]}
 
+    def check(self):
+        return {'status': 'ok'}
+
 
 @app.post("/")
 def create_game():
@@ -25,3 +28,8 @@ def create_game():
 def info(id):
     game = games[id]
     return game.info()
+
+@app.get('/{id}/check')
+def check(id):
+    game = games[id]
+    return game.check()
