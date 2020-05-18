@@ -21,12 +21,13 @@ class GameServer:
     def __init__(self, address='127.0.0.1', port=8001):
         self.url = f'http://{address}:{port}'
         # create game
-        rsp = requests.post(self.url)
+        rsp = requests.post(self.url, json={'player_1': {'name': 'player_1_name'}})
         rsp.raise_for_status()
         self.id = rsp.json()['id']
 
     def game_map(self):
         rsp = requests.get('{url}/{path}'.format(url=self.url, path=self.id))
+        print(rsp.json())
         return rsp.json()['map']
 
     def check_server(self):
